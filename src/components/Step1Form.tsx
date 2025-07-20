@@ -118,6 +118,17 @@ export const Step1Form: React.FC = () => {
   const [step1Data, setStep1Data] = useAtom(step1DataAtom);
   const [validationErrors, setValidationErrors] = useAtom(validationErrorsAtom);
 
+  // 에러 발생 시 첫 번째 에러 필드로 focus 이동
+  useEffect(() => {
+    if (validationErrors.length > 0) {
+      const firstError = validationErrors[0];
+      const errorField = document.getElementById(`field-${firstError.field.toLowerCase().replace(/\s+/g, '-')}`);
+      if (errorField) {
+        errorField.focus();
+      }
+    }
+  }, [validationErrors]);
+
   const getFieldError = (fieldName: string) => {
     return validationErrors.find(error => error.field === fieldName)?.message;
   };
@@ -169,6 +180,7 @@ export const Step1Form: React.FC = () => {
         label="도서 제목" 
         required 
         error={getFieldError('title')}
+        id="field-title"
       >
         <Input
           type="text"
@@ -183,6 +195,7 @@ export const Step1Form: React.FC = () => {
         label="저자" 
         required 
         error={getFieldError('author')}
+        id="field-author"
       >
         <Input
           type="text"
@@ -194,7 +207,7 @@ export const Step1Form: React.FC = () => {
       </Field>
 
       <FormRow>
-        <Field label="출판사">
+        <Field label="출판사" id="field-publisher">
           <Input
             type="text"
             placeholder="출판사를 입력하세요"
@@ -206,6 +219,7 @@ export const Step1Form: React.FC = () => {
         <Field 
           label="전체 페이지 수"
           error={getFieldError('totalPages')}
+          id="field-totalpages"
         >
           <Input
             type="number"
@@ -228,6 +242,7 @@ export const Step1Form: React.FC = () => {
         label="출판일" 
         required 
         error={getFieldError('publishDate')}
+        id="field-publishdate"
       >
         <DatePickerWrapper hasError={!!getFieldError('publishDate')}>
           <ClientOnlyDatePicker
@@ -243,6 +258,7 @@ export const Step1Form: React.FC = () => {
       <Field 
         label="독서 상태" 
         required
+        id="field-readingstatus"
       >
         <Select
           value={step1Data.readingStatus}
@@ -267,6 +283,7 @@ export const Step1Form: React.FC = () => {
           disabled={shouldDisableStartDate(step1Data.readingStatus)}
           error={getFieldError('startDate')}
           helpText={getDateHelpText('start', step1Data.readingStatus)}
+          id="field-startdate"
         >
           <DatePickerWrapper hasError={!!getFieldError('startDate')} isDisabled={shouldDisableStartDate(step1Data.readingStatus)}>
             <ClientOnlyDatePicker
@@ -287,6 +304,7 @@ export const Step1Form: React.FC = () => {
           disabled={shouldDisableEndDate(step1Data.readingStatus)}
           error={getFieldError('endDate')}
           helpText={getDateHelpText('end', step1Data.readingStatus)}
+          id="field-enddate"
         >
           <DatePickerWrapper hasError={!!getFieldError('endDate')} isDisabled={shouldDisableEndDate(step1Data.readingStatus)}>
             <ClientOnlyDatePicker

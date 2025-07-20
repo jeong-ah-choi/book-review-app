@@ -132,6 +132,16 @@ interface FieldLabelProps {
   htmlFor?: string;
 }
 
+interface FieldProps {
+  label: string;
+  error?: string;
+  helpText?: string;
+  required?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  id?: string;
+}
+
 // Components
 export const Input: React.FC<InputProps> = ({ hasError, ...props }) => (
   <StyledInput 
@@ -167,30 +177,33 @@ export const FieldLabel: React.FC<FieldLabelProps> = ({
   </LabelContainer>
 );
 
-// Complete Field component that combines label, input, and error message
-interface FieldProps {
-  label: string;
-  error?: string;
-  helpText?: string;
-  required?: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
-}
-
 export const Field: React.FC<FieldProps> = ({
   label,
   error,
   helpText,
   required,
   disabled,
-  children
-}) => (
-  <FormGroup>
-    <FieldLabel required={required} disabled={disabled}>
-      {label}
-    </FieldLabel>
-    {children}
-    {error && <ErrorMessage>{error}</ErrorMessage>}
-    {helpText && <HelpText>{helpText}</HelpText>}
-  </FormGroup>
-); 
+  children,
+  id
+}) => {
+  const fieldId = id || `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const errorId = `${fieldId}-error`;
+  const helpId = `${fieldId}-help`;
+
+  return (
+    <FormGroup>
+      <FieldLabel required={required} disabled={disabled} htmlFor={fieldId}>
+        {label}
+      </FieldLabel>
+      {React.cloneElement(children as React.ReactElement<React.InputHTMLAttributes<HTMLInputElement> | React.SelectHTMLAttributes<HTMLSelectElement>>, {
+        id: fieldId,
+        'aria-invalid': !!error,
+        'aria-describedby': error ? errorId : helpText ? helpId : undefined,
+        'aria-required': required,
+        'aria-disabled': disabled
+      })}
+      {error && <ErrorMessage id={errorId} role="alert">{error}</ErrorMessage>}
+      {helpText && <HelpText id={helpId}>{helpText}</HelpText>}
+    </FormGroup>
+  );
+}; 
