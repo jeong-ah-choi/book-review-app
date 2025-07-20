@@ -7,13 +7,20 @@ import { step1DataAtom, validationErrorsAtom } from '../atoms/bookReviewAtoms';
 import { ReadingStatus } from '../types/bookReview';
 import { validateField } from '../utils/validation';
 import { 
-  FormGroup, 
+  readingStatusOptions,
+  getStatusInfo,
+  getDateHelpText,
+  shouldDisableStartDate,
+  shouldDisableEndDate,
+  isStartDateRequired,
+  isEndDateRequired
+} from '../utils/readingStatus';
+import { 
   FormRow, 
   Input, 
   Select, 
   Field, 
-  ErrorMessage, 
-  HelpText 
+  ErrorMessage
 } from './ui/FormField';
 
 // DatePicker를 클라이언트에서만 로드
@@ -105,59 +112,7 @@ const StatusInfo = styled.div`
   color: #0369a1;
 `;
 
-const readingStatusOptions: { value: ReadingStatus; label: string }[] = [
-  { value: 'want-to-read', label: '읽고 싶은 책' },
-  { value: 'reading', label: '읽는 중' },
-  { value: 'read', label: '읽음' },
-  { value: 'on-hold', label: '보류 중' },
-];
 
-// 독서 상태별 안내 메시지
-const getStatusInfo = (status: ReadingStatus): string => {
-  switch (status) {
-    case 'want-to-read':
-      return '📚 읽고 싶은 책으로 설정되었습니다. 독서 기간은 입력하지 않습니다.';
-    case 'reading':
-      return '📖 현재 읽고 있는 책입니다. 독서 시작일만 입력해주세요.';
-    case 'read':
-      return '✅ 완독한 책입니다. 독서 시작일과 종료일을 모두 입력해주세요.';
-    case 'on-hold':
-      return '⏸️ 잠시 중단한 책입니다. 독서 시작일만 입력해주세요.';
-    default:
-      return '';
-  }
-};
-
-// 날짜 필드별 도움말 텍스트
-const getDateHelpText = (fieldType: 'start' | 'end', status: ReadingStatus): string => {
-  if (fieldType === 'start') {
-    switch (status) {
-      case 'want-to-read':
-        return '읽고 싶은 책 상태에서는 입력할 수 없습니다.';
-      case 'reading':
-        return '독서를 시작한 날짜를 선택해주세요.';
-      case 'read':
-        return '독서를 시작한 날짜를 선택해주세요.';
-      case 'on-hold':
-        return '독서를 시작한 날짜를 선택해주세요.';
-      default:
-        return '';
-    }
-  } else {
-    switch (status) {
-      case 'want-to-read':
-        return '읽고 싶은 책 상태에서는 입력할 수 없습니다.';
-      case 'reading':
-        return '아직 읽고 있는 책이므로 입력할 수 없습니다.';
-      case 'read':
-        return '독서를 완료한 날짜를 선택해주세요.';
-      case 'on-hold':
-        return '중단한 책이므로 입력할 수 없습니다.';
-      default:
-        return '';
-    }
-  }
-};
 
 export const Step1Form: React.FC = () => {
   const [step1Data, setStep1Data] = useAtom(step1DataAtom);
@@ -197,7 +152,7 @@ export const Step1Form: React.FC = () => {
 
   // 독서 상태 변경 시 날짜 필드 초기화
   useEffect(() => {
-    if (step1Data.readingStatus === 'want-to-read') {
+    if (shouldDisableStartDate(step1Data.readingStatus)) {
       if (step1Data.readingPeriod.startDate || step1Data.readingPeriod.endDate) {
         setStep1Data({
           readingPeriod: { startDate: null, endDate: null }
@@ -205,12 +160,6 @@ export const Step1Form: React.FC = () => {
       }
     }
   }, [step1Data.readingStatus, step1Data.readingPeriod, setStep1Data]);
-
-  const shouldDisableStartDate = step1Data.readingStatus === 'want-to-read';
-  const shouldDisableEndDate = ['want-to-read', 'reading', 'on-hold'].includes(step1Data.readingStatus);
-  
-  const isStartDateRequired = ['reading', 'read', 'on-hold'].includes(step1Data.readingStatus);
-  const isEndDateRequired = step1Data.readingStatus === 'read';
 
   return (
     <FormContainer>
@@ -303,18 +252,18 @@ export const Step1Form: React.FC = () => {
       <FormRow>
         <Field 
           label="독서 시작일"
-          required={isStartDateRequired}
-          disabled={shouldDisableStartDate}
+          required={isStartDateRequired(step1Data.readingStatus)}
+          disabled={shouldDisableStartDate(step1Data.readingStatus)}
           error={getFieldError('startDate')}
           helpText={getDateHelpText('start', step1Data.readingStatus)}
         >
-          <DatePickerWrapper hasError={!!getFieldError('startDate')} isDisabled={shouldDisableStartDate}>
+          <DatePickerWrapper hasError={!!getFieldError('startDate')} isDisabled={shouldDisableStartDate(step1Data.readingStatus)}>
             <ClientOnlyDatePicker
               selected={step1Data.readingPeriod.startDate}
               onChange={(date) => handleReadingPeriodChange('startDate', date)}
               dateFormat="yyyy-MM-dd"
               placeholderText="시작일을 선택하세요"
-              disabled={shouldDisableStartDate}
+              disabled={shouldDisableStartDate(step1Data.readingStatus)}
               minDate={step1Data.publishDate || undefined}
               maxDate={step1Data.readingPeriod.endDate || new Date()}
             />
@@ -323,18 +272,18 @@ export const Step1Form: React.FC = () => {
 
         <Field 
           label="독서 종료일"
-          required={isEndDateRequired}
-          disabled={shouldDisableEndDate}
+          required={isEndDateRequired(step1Data.readingStatus)}
+          disabled={shouldDisableEndDate(step1Data.readingStatus)}
           error={getFieldError('endDate')}
           helpText={getDateHelpText('end', step1Data.readingStatus)}
         >
-          <DatePickerWrapper hasError={!!getFieldError('endDate')} isDisabled={shouldDisableEndDate}>
+          <DatePickerWrapper hasError={!!getFieldError('endDate')} isDisabled={shouldDisableEndDate(step1Data.readingStatus)}>
             <ClientOnlyDatePicker
               selected={step1Data.readingPeriod.endDate}
               onChange={(date) => handleReadingPeriodChange('endDate', date)}
               dateFormat="yyyy-MM-dd"
               placeholderText="종료일을 선택하세요"
-              disabled={shouldDisableEndDate}
+              disabled={shouldDisableEndDate(step1Data.readingStatus)}
               minDate={step1Data.readingPeriod.startDate || step1Data.publishDate || undefined}
               maxDate={new Date()}
             />
