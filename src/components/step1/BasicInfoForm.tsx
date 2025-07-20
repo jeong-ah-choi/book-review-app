@@ -6,28 +6,14 @@ import styled from '@emotion/styled';
 import { step1DataAtom, validationErrorsAtom } from '../../atoms/bookReviewAtoms';
 import { validateField } from '../../utils/validation';
 import { Field, FormRow, Input } from '../ui/FormField';
+import { LoadingInput } from '../ui/LoadingInput';
 
 // DatePicker를 클라이언트에서만 로드
 const ClientOnlyDatePicker = dynamic(
   () => import('../ClientOnlyDatePicker').then(mod => ({ default: mod.ClientOnlyDatePicker })),
   { 
     ssr: false,
-    loading: () => (
-      <input 
-        type="text" 
-        placeholder="날짜 선택..." 
-        disabled 
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          border: '1px solid #d1d5db',
-          borderRadius: '0.375rem',
-          fontSize: '0.875rem',
-          backgroundColor: '#f9fafb',
-          color: '#6b7280'
-        }}
-      />
-    )
+    loading: () => <LoadingInput placeholder="날짜 선택..." />
   }
 );
 
