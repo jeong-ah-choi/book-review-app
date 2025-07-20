@@ -41,6 +41,27 @@ const StyledInput = styled.input<{ hasError?: boolean }>`
     border-color: ${({ hasError }) => hasError ? '#ef4444' : '#3b82f6'};
     box-shadow: 0 0 0 3px ${({ hasError }) => hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
   }
+
+  /* 숫자 input의 스크롤 비활성화 */
+  &[type="number"]::-webkit-outer-spin-button,
+  &[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    display: none;
+  }
+
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* 스크롤 이벤트 완전 차단 */
+  &[type="number"]:focus {
+    pointer-events: none;
+  }
+  
+  &[type="number"]:focus:hover {
+    pointer-events: none;
+  }
 `;
 
 const StyledSelect = styled.select<{ hasError?: boolean }>`
@@ -113,7 +134,16 @@ interface FieldLabelProps {
 
 // Components
 export const Input: React.FC<InputProps> = ({ hasError, ...props }) => (
-  <StyledInput hasError={hasError} {...props} />
+  <StyledInput 
+    hasError={hasError} 
+    {...props}
+    onWheel={(e) => {
+      // 숫자 input에서 스크롤 이벤트 방지
+      if (props.type === 'number') {
+        e.currentTarget.blur();
+      }
+    }}
+  />
 );
 
 export const Select: React.FC<SelectProps> = ({ hasError, children, ...props }) => (

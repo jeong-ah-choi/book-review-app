@@ -203,12 +203,23 @@ export const Step1Form: React.FC = () => {
           />
         </Field>
 
-        <Field label="전체 페이지 수">
+        <Field 
+          label="전체 페이지 수"
+          error={getFieldError('totalPages')}
+        >
           <Input
             type="number"
             placeholder="페이지 수"
             value={step1Data.totalPages || ''}
-            onChange={(e) => setStep1Data({ totalPages: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+            onChange={(e) => {
+              const value = e.target.value;
+              const pages = value ? parseInt(value, 10) : undefined;
+              setStep1Data({ totalPages: pages });
+              handleFieldChange('totalPages', value);
+            }}
+            hasError={!!getFieldError('totalPages')}
+            min="1"
+            max="10000"
           />
         </Field>
       </FormRow>

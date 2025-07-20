@@ -16,6 +16,15 @@ export const validateStep1 = (data: Step1Data): StepValidationResult => {
     errors.push({ field: 'publishDate', message: '출판일을 선택해주세요.' });
   }
 
+  // 전체 페이지 수 검증 (선택사항이지만 입력된 경우 유효성 검사)
+  if (data.totalPages !== undefined) {
+    if (data.totalPages <= 0) {
+      errors.push({ field: 'totalPages', message: '페이지 수는 1 이상의 양수를 입력해주세요.' });
+    } else if (data.totalPages > 10000) {
+      errors.push({ field: 'totalPages', message: '페이지 수는 10,000 이하로 입력해주세요.' });
+    }
+  }
+
   // 독서 상태별 날짜 검증
   const { readingStatus, readingPeriod } = data;
   const { startDate, endDate } = readingPeriod;
@@ -117,6 +126,18 @@ export const validateField = (fieldName: string, value: string | Date | null | u
     
     case 'publishDate':
       return !value ? { field: 'publishDate', message: '출판일을 선택해주세요.' } : null;
+    
+    case 'totalPages':
+      if (value !== undefined && value !== null && value !== '') {
+        const pages = typeof value === 'string' ? parseInt(value, 10) : (typeof value === 'number' ? value : NaN);
+        if (isNaN(pages) || pages <= 0) {
+          return { field: 'totalPages', message: '페이지 수는 1 이상의 양수를 입력해주세요.' };
+        }
+        if (pages > 10000) {
+          return { field: 'totalPages', message: '페이지 수는 10,000 이하로 입력해주세요.' };
+        }
+      }
+      return null;
     
     case 'startDate':
       if (data.readingStatus === 'want-to-read' && value) {
