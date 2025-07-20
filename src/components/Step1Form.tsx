@@ -6,6 +6,15 @@ import dynamic from 'next/dynamic';
 import { step1DataAtom, validationErrorsAtom } from '../atoms/bookReviewAtoms';
 import { ReadingStatus } from '../types/bookReview';
 import { validateField } from '../utils/validation';
+import { 
+  FormGroup, 
+  FormRow, 
+  Input, 
+  Select, 
+  Field, 
+  ErrorMessage, 
+  HelpText 
+} from './ui/FormField';
 
 // DatePicker를 클라이언트에서만 로드
 const ClientOnlyDatePicker = dynamic(
@@ -48,54 +57,6 @@ const FormTitle = styled.h2`
   text-align: center;
 `;
 
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label<{ isDisabled?: boolean }>`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${({ isDisabled }) => isDisabled ? '#9ca3af' : '#374151'};
-  margin-bottom: 0.5rem;
-  transition: color 0.2s ease;
-`;
-
-const Input = styled.input<{ hasError?: boolean }>`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid ${({ hasError }) => hasError ? '#ef4444' : '#d1d5db'};
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ hasError }) => hasError ? '#ef4444' : '#3b82f6'};
-    box-shadow: 0 0 0 3px ${({ hasError }) => hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-`;
-
-const Select = styled.select<{ hasError?: boolean }>`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid ${({ hasError }) => hasError ? '#ef4444' : '#d1d5db'};
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  background-color: white;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ hasError }) => hasError ? '#ef4444' : '#3b82f6'};
-    box-shadow: 0 0 0 3px ${({ hasError }) => hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
-  }
-`;
-
 const DatePickerWrapper = styled.div<{ hasError?: boolean; isDisabled?: boolean }>`
   transition: all 0.2s ease;
   opacity: ${({ isDisabled }) => isDisabled ? 0.6 : 1};
@@ -132,45 +93,7 @@ const DatePickerWrapper = styled.div<{ hasError?: boolean; isDisabled?: boolean 
   }
 `;
 
-const ErrorMessage = styled.div`
-  color: #ef4444;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-`;
 
-const HelpText = styled.div`
-  color: #6b7280;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  font-style: italic;
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const RequiredMark = styled.span`
-  color: #ef4444;
-  margin-left: 0.25rem;
-`;
-
-const OptionalMark = styled.span`
-  color: #9ca3af;
-  margin-left: 0.25rem;
-  font-weight: 400;
-`;
-
-const DisabledMark = styled.span`
-  color: #9ca3af;
-  margin-left: 0.25rem;
-  font-weight: 400;
-`;
 
 const StatusInfo = styled.div`
   background-color: #f0f9ff;
@@ -293,10 +216,11 @@ export const Step1Form: React.FC = () => {
     <FormContainer>
       <FormTitle>1단계: 도서 기본 정보</FormTitle>
       
-      <FormGroup>
-        <Label>
-          도서 제목<RequiredMark>*</RequiredMark>
-        </Label>
+      <Field 
+        label="도서 제목" 
+        required 
+        error={getFieldError('title')}
+      >
         <Input
           type="text"
           placeholder="도서 제목을 입력하세요"
@@ -304,13 +228,13 @@ export const Step1Form: React.FC = () => {
           onChange={(e) => handleFieldChange('title', e.target.value)}
           hasError={!!getFieldError('title')}
         />
-        {getFieldError('title') && <ErrorMessage>{getFieldError('title')}</ErrorMessage>}
-      </FormGroup>
+      </Field>
 
-      <FormGroup>
-        <Label>
-          저자<RequiredMark>*</RequiredMark>
-        </Label>
+      <Field 
+        label="저자" 
+        required 
+        error={getFieldError('author')}
+      >
         <Input
           type="text"
           placeholder="저자명을 입력하세요"
@@ -318,35 +242,33 @@ export const Step1Form: React.FC = () => {
           onChange={(e) => handleFieldChange('author', e.target.value)}
           hasError={!!getFieldError('author')}
         />
-        {getFieldError('author') && <ErrorMessage>{getFieldError('author')}</ErrorMessage>}
-      </FormGroup>
+      </Field>
 
       <FormRow>
-        <FormGroup>
-          <Label>출판사</Label>
+        <Field label="출판사">
           <Input
             type="text"
             placeholder="출판사를 입력하세요"
             value={step1Data.publisher || ''}
             onChange={(e) => handleFieldChange('publisher', e.target.value)}
           />
-        </FormGroup>
+        </Field>
 
-        <FormGroup>
-          <Label>전체 페이지 수</Label>
+        <Field label="전체 페이지 수">
           <Input
             type="number"
             placeholder="페이지 수"
             value={step1Data.totalPages || ''}
             onChange={(e) => setStep1Data({ totalPages: e.target.value ? parseInt(e.target.value, 10) : undefined })}
           />
-        </FormGroup>
+        </Field>
       </FormRow>
 
-      <FormGroup>
-        <Label>
-          출판일<RequiredMark>*</RequiredMark>
-        </Label>
+      <Field 
+        label="출판일" 
+        required 
+        error={getFieldError('publishDate')}
+      >
         <DatePickerWrapper hasError={!!getFieldError('publishDate')}>
           <ClientOnlyDatePicker
             selected={step1Data.publishDate}
@@ -356,13 +278,12 @@ export const Step1Form: React.FC = () => {
             maxDate={new Date()}
           />
         </DatePickerWrapper>
-        {getFieldError('publishDate') && <ErrorMessage>{getFieldError('publishDate')}</ErrorMessage>}
-      </FormGroup>
+      </Field>
 
-      <FormGroup>
-        <Label>
-          독서 상태<RequiredMark>*</RequiredMark>
-        </Label>
+      <Field 
+        label="독서 상태" 
+        required
+      >
         <Select
           value={step1Data.readingStatus}
           onChange={(e) => handleFieldChange('readingStatus', e.target.value as ReadingStatus)}
@@ -373,24 +294,20 @@ export const Step1Form: React.FC = () => {
             </option>
           ))}
         </Select>
-      </FormGroup>
+      </Field>
 
       <StatusInfo>
         {getStatusInfo(step1Data.readingStatus)}
       </StatusInfo>
 
       <FormRow>
-        <FormGroup>
-          <Label isDisabled={shouldDisableStartDate}>
-            독서 시작일
-            {shouldDisableStartDate ? (
-              <DisabledMark>(입력 불가)</DisabledMark>
-            ) : isStartDateRequired ? (
-              <RequiredMark>*</RequiredMark>
-            ) : (
-              <OptionalMark>(선택사항)</OptionalMark>
-            )}
-          </Label>
+        <Field 
+          label="독서 시작일"
+          required={isStartDateRequired}
+          disabled={shouldDisableStartDate}
+          error={getFieldError('startDate')}
+          helpText={getDateHelpText('start', step1Data.readingStatus)}
+        >
           <DatePickerWrapper hasError={!!getFieldError('startDate')} isDisabled={shouldDisableStartDate}>
             <ClientOnlyDatePicker
               selected={step1Data.readingPeriod.startDate}
@@ -402,21 +319,15 @@ export const Step1Form: React.FC = () => {
               maxDate={step1Data.readingPeriod.endDate || new Date()}
             />
           </DatePickerWrapper>
-          {getFieldError('startDate') && <ErrorMessage>{getFieldError('startDate')}</ErrorMessage>}
-          <HelpText>{getDateHelpText('start', step1Data.readingStatus)}</HelpText>
-        </FormGroup>
+        </Field>
 
-        <FormGroup>
-          <Label isDisabled={shouldDisableEndDate}>
-            독서 종료일
-            {shouldDisableEndDate ? (
-              <DisabledMark>(입력 불가)</DisabledMark>
-            ) : isEndDateRequired ? (
-              <RequiredMark>*</RequiredMark>
-            ) : (
-              <OptionalMark>(선택사항)</OptionalMark>
-            )}
-          </Label>
+        <Field 
+          label="독서 종료일"
+          required={isEndDateRequired}
+          disabled={shouldDisableEndDate}
+          error={getFieldError('endDate')}
+          helpText={getDateHelpText('end', step1Data.readingStatus)}
+        >
           <DatePickerWrapper hasError={!!getFieldError('endDate')} isDisabled={shouldDisableEndDate}>
             <ClientOnlyDatePicker
               selected={step1Data.readingPeriod.endDate}
@@ -428,9 +339,7 @@ export const Step1Form: React.FC = () => {
               maxDate={new Date()}
             />
           </DatePickerWrapper>
-          {getFieldError('endDate') && <ErrorMessage>{getFieldError('endDate')}</ErrorMessage>}
-          <HelpText>{getDateHelpText('end', step1Data.readingStatus)}</HelpText>
-        </FormGroup>
+        </Field>
       </FormRow>
 
       {(getFieldError('readingPeriod') || getFieldError('dateRange')) && (
